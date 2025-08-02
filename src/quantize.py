@@ -16,10 +16,12 @@ print(f"Model file size before quantization: {model_size:.2f} KB")
 params = {"coef": model.coef_, "intercept": model.intercept_}
 joblib.dump(params, "unquant_params.joblib")
 
-# Quantize using float16 for better precision
-q_coef = model.coef_.astype(np.float16)
-q_intercept = np.float16(model.intercept_)
-quantized = {"coef": q_coef, "intercept": q_intercept}
+# Quantize using only uint8
+max_val = np.max(np.abs(model.coef_))
+scale_factor = 255 / max_val if max_val != 0 else 1
+q_coef = np.clip((model.coef_ * scale_factor), 0, 255).astype(np.uint8)
+q_intercept = np.clip((model.intercept_ * scale_factor), 0, 255).astype(np.uint8)
+quantized = {"coef": q_coef, "intercept": q_intercept, "scale_factor": scale_factor}
 joblib.dump(quantized, "quant_params.joblib")
 
 # Print quantized model size
@@ -27,8 +29,8 @@ quant_model_size = os.path.getsize("quant_params.joblib") / 1024  # in KB
 print(f"Model file size after quantization: {quant_model_size:.2f} KB")
 
 # Dequantize and inference
-deq_coef = q_coef.astype(np.float32)  # Back to float32 for computation
-deq_intercept = float(q_intercept)
+deq_coef = q_coef.astype(np.float32) / scale_factor
+deq_intercept = q_intercept.astype(np.float32) / scale_factor
 sample_input = np.random.rand(len(deq_coef))
 prediction = np.dot(sample_input, deq_coef) + deq_intercept
 print("Sample Inference:", prediction)
