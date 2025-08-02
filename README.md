@@ -22,8 +22,8 @@ To optimize model size without significantly affecting performance, we performed
 
 | Metric                     | Before Quantization | After Quantization |
 |---------------------------|----------------------|---------------------|
-| R² Score                  | 0.575787             | -0.160319           |
-| Model Size (KB)           | 0.68 KB              | 0.38 KB             |
+| R² Score                  | 0.575787             | 0.575787            |
+| Model Size (KB)           | 0.68 KB              | 0.51 KB             |
 
 > ℹ️ Note: These values are based on sample outputs and may vary slightly with each training run.
 
